@@ -185,6 +185,23 @@
       const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
       lastTimestamp = timestamp;
 
+      // Active Star Updates
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        s.rotation += s.rotSpeed;
+        s.pulsePhase += 0.06;
+        s.x += s.vx;
+        s.y += s.vy;
+
+        const pad = s.radius + 15;
+        if (s.x < pad) { s.x = pad; s.vx *= -1; }
+        if (s.x > logicalWidth - pad) { s.x = logicalWidth - pad; s.vx *= -1; }
+        if (s.y < pad) { s.y = pad; s.vy *= -1; }
+        if (s.y > logicalHeight - pad) { s.y = logicalHeight - pad; s.vy *= -1; }
+      }
+
+      if (stars.length < 2) stars.push(createStar());
+
       render(dt);
       requestAnimationFrame(gameLoop);
     }
