@@ -65,8 +65,23 @@
       ctx.scale(dpr, dpr);
     }
 
+    canvas.addEventListener('pointermove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      if (Math.random() < 0.45) {
+        cursorParticles.push({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          size: Math.random() * 2 + 1,
+          alpha: 0.9
+        });
+      }
+    });
+
     window.addEventListener('resize', resizeCanvas);
     let backgroundStars = [];
+    let cursorParticles = [];
     let lastTimestamp = 0;
 
     function initBackgroundStars() {
@@ -96,6 +111,22 @@
         ctx.arc(bs.x, bs.y, bs.radius, 0, Math.PI * 2);
         ctx.fill();
       });
+
+      // Cursor Stardust Particles
+      for (let i = cursorParticles.length - 1; i >= 0; i--) {
+        const cp = cursorParticles[i];
+        cp.x += cp.vx;
+        cp.y += cp.vy;
+        cp.alpha -= dt * 2.2;
+        if (cp.alpha <= 0) {
+          cursorParticles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = `rgba(251, 191, 36, ${cp.alpha * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, cp.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // Space Grid
       ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
