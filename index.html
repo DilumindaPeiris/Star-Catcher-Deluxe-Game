@@ -165,9 +165,25 @@
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.rotation);
-        drawStarPolygon(0, 0, config.spikes, s.radius, s.radius * 0.48);
+        const pulseScale = 1 + Math.sin(s.pulsePhase) * 0.06;
+        const currentR = s.radius * pulseScale;
+
+        // Outer Radial Glow
+        const grad = ctx.createRadialGradient(0, 0, currentR * 0.2, 0, 0, currentR * 1.8);
+        grad.addColorStop(0, config.innerGlow);
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, currentR * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Polygon Body & Outline
+        drawStarPolygon(0, 0, config.spikes, currentR, currentR * 0.48);
         ctx.fillStyle = config.color;
         ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = config.accent;
+        ctx.stroke();
         ctx.restore();
       });
 
