@@ -66,7 +66,42 @@
     }
 
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('DOMContentLoaded', resizeCanvas);
+    let lastTimestamp = 0;
+
+    function render(dt) {
+      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+      // Space Grid
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
+      ctx.lineWidth = 1;
+      const gridSize = 32;
+      for (let x = 0; x < logicalWidth; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, logicalHeight);
+        ctx.stroke();
+      }
+      for (let y = 0; y < logicalHeight; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(logicalWidth, y);
+        ctx.stroke();
+      }
+    }
+
+    function gameLoop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+      lastTimestamp = timestamp;
+
+      render(dt);
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
+      requestAnimationFrame(gameLoop);
+    });
   </script>
 </body>
 </html>
