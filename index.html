@@ -45,5 +45,28 @@
       <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
     </div>
   </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+
+    let logicalWidth = 480;
+    let logicalHeight = 360;
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      logicalWidth = rect.width || 480;
+      logicalHeight = rect.height || 360;
+
+      canvas.width = Math.floor(logicalWidth * dpr);
+      canvas.height = Math.floor(logicalHeight * dpr);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', resizeCanvas);
+  </script>
 </body>
 </html>
