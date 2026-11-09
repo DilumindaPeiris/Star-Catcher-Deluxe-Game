@@ -66,6 +66,11 @@
     const highScoreDisplay = document.getElementById('highScoreDisplay');
     let score = 0;
     let highScore = 0;
+    let combo = 1;
+    let comboTimer = 0;
+    const comboDuration = 2.2;
+    let isFrenzy = false;
+    let frenzyTimer = 0;
 
     let logicalWidth = 480;
     let logicalHeight = 360;
