@@ -52,6 +52,14 @@
           <p class="text-xs text-slate-400 font-medium">Catch the celestial stars & build crazy combos</p>
         </div>
       </div>
+
+      <!-- Quick Sound FX Toggle -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button id="sfxToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Sound FX">
+          <span id="sfxIcon">🔊</span>
+          <span class="hidden sm:inline text-[11px]">SFX</span>
+        </button>
+      </div>
     </div>
     <div id="canvasContainer" class="w-full aspect-[4/3] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden relative shadow-2xl select-none">
       <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
