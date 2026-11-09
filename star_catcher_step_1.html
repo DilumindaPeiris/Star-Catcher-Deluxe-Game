@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Star Catcher — Deluxe Edition</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-mono-numbers {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+    /* Glow utilities */
+    .glow-gold {
+      box-shadow: 0 0 25px -5px rgba(251, 191, 36, 0.4);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.4);
+    }
+    .text-glow {
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 selection:bg-amber-500/30">
+
+  <!-- Main Game Card -->
+  <div class="w-full max-w-xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 relative overflow-hidden">
+    
+    <!-- Ambient background light orb inside card -->
+    <div class="absolute -top-24 -left-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header & Mode Tabs -->
+    <div class="w-full flex flex-col gap-3 z-10">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 font-black text-lg">
+            ★
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">Star Catcher</h1>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">Deluxe</span>
+            </div>
+            <p class="text-xs text-slate-400 font-medium">Catch the celestial stars & build crazy combos</p>
+          </div>
+        </div>
+
+        <!-- Quick Sound & Help Toggles -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button id="sfxToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Sound FX">
+            <span id="sfxIcon">🔊</span>
+            <span class="hidden sm:inline text-[11px]">SFX</span>
+          </button>
+          <button id="bgmToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Cosmic BGM">
+            <span id="bgmIcon">🎵</span>
+            <span class="hidden sm:inline text-[11px]">Music</span>
+          </button>
+          <button id="statsModalBtn" class="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-amber-300 transition flex items-center gap-1 active:scale-95" title="View Stats & Achievements">
+            <span>🏆</span>
+            <span class="hidden sm:inline text-[11px]">Stats</span>
+          </button>
+          <button id="guideBtn" class="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition active:scale-95" title="Game Legend & Star Guide">
+            <span>❓</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode Selector Pills -->
+      <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs font-semibold text-slate-400">
+        <button id="modeTimeAttack" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span>⏱️</span>
+          <span>Time Attack</span>
+        </button>
+        <button id="modeClassic" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 hover:text-slate-200">
+          <span>❤️</span>
+          <span>Classic</span>
+        </button>
+        <button id="modeZen" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 hover:text-slate-200">
+          <span>✨</span>
+          <span>Zen Chill</span>
+        </button>
+      </div>
+
+      <!-- Score, High Score & Dynamic Stats Bar -->
+      <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
+        <!-- Score Card -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Score</div>
+          <div id="scoreDisplay" class="text-xl sm:text-2xl font-black text-amber-400 font-mono-numbers tracking-tight">0</div>
+        </div>
+
+        <!-- High Score Card -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Best</div>
+          <div id="highScoreDisplay" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-numbers tracking-tight">0</div>
+        </div>
+
+        <!-- Mode Dynamic: Timer / Lives / Star Count -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center relative overflow-hidden">
+          <div id="modeStatusLabel" class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Time Left</div>
+          <div id="modeStatusValue" class="text-xl sm:text-2xl font-black text-white font-mono-numbers tracking-tight flex items-center justify-center gap-1">
+            <span id="timeVal">30.0</span><span class="text-xs text-slate-400 font-normal">s</span>
+          </div>
+          <!-- Time bar progress meter -->
+          <div id="timerBarTrack" class="absolute bottom-0 left-0 w-full h-1 bg-slate-800">
+            <div id="timerBarFill" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Combo Streak & Multiplier -->
+        <div class="col-span-3 sm:col-span-1 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-row sm:flex-col items-center sm:justify-center justify-between px-4">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Combo</div>
+          <div class="flex items-center gap-1.5">
+            <span id="comboDisplay" class="text-xl sm:text-2xl font-black text-purple-400 font-mono-numbers">1x</span>
+            <span id="frenzyBadge" class="hidden text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 rounded animate-pulse">Frenzy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas Container -->
+    <div id="canvasContainer" class="w-full aspect-[4/3] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden relative shadow-2xl select-none group">
+      <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
+
+      <!-- Frost Effect Overlay for Freeze Star -->
+      <div id="frostOverlay" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 border-[6px] border-cyan-400/40 bg-cyan-500/10 backdrop-blur-[0.5px]"></div>
+
+      <!-- Start Overlay -->
+      <div id="startOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 text-slate-950 text-3xl font-black flex items-center justify-center mb-3 shadow-xl shadow-amber-400/25 animate-bounce">
+          ★
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Ready to Catch?</h2>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-xs mt-1.5 mb-6">
+          Click or tap falling stars before they vanish! Chain rapid catches to ignite <span class="text-amber-300 font-semibold">combos</span> and unleash cosmic power-ups.
+        </p>
+        <button id="startGameBtn" class="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-500/30 transition transform hover:scale-105 active:scale-95 flex items-center gap-2">
+          <span>Start Playing</span>
+          <span class="text-lg">→</span>
+        </button>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="pauseOverlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div class="text-4xl mb-2">⏸️</div>
+        <h2 class="text-2xl font-black text-white">Game Paused</h2>
+        <p class="text-xs text-slate-400 mt-1 mb-5">Take a breather, the cosmos will wait for you.</p>
+        <div class="flex gap-3">
+          <button id="resumeGameBtn" class="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm transition active:scale-95">
+            Resume (Space)
+          </button>
+          <button id="quitGameBtn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition active:scale-95">
+            Restart
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Over Overlay -->
+      <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div id="newBestBanner" class="hidden px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-2 animate-bounce">
+          🎉 New High Score! 🎉
+        </div>
+        <h2 class="text-3xl font-black text-white tracking-tight mb-1">Time's Up!</h2>
+        <p id="gameOverSubtext" class="text-xs text-slate-400 mb-4">Great cosmic expedition!</p>
+
+        <!-- Final Score Breakdown -->
+        <div class="w-full max-w-xs bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5 mb-5 shadow-inner">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Final Score:</span>
+            <span id="finalScoreVal" class="text-lg font-black text-amber-400 font-mono-numbers">0</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Stars Caught:</span>
+            <span id="finalStarsVal" class="font-bold text-slate-200 font-mono-numbers">0</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Highest Streak:</span>
+            <span id="finalStreakVal" class="font-bold text-purple-400 font-mono-numbers">1x</span>
+          </div>
+          <div class="flex justify-between items-center text-xs border-t border-slate-800/80 pt-2">
+            <span class="text-slate-400">Accuracy:</span>
+            <span id="finalAccuracyVal" class="font-bold text-emerald-400 font-mono-numbers">100%</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="playAgainBtn" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/30 transition transform hover:scale-105 active:scale-95">
+            Play Again 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Canvas HUD Buttons (top right overlay) -->
+      <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+        <button id="pauseBtn" class="w-8 h-8 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 backdrop-blur text-xs flex items-center justify-center text-slate-300 transition active:scale-95" title="Pause Game (Space)">
+          ⏸
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Hints -->
+    <div class="w-full flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-300">Space</kbd> Pause
+        </span>
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-300">R</kbd> Restart
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="resetScoreBtn" class="px-3 py-1.5 rounded-xl bg-slate-800/70 hover:bg-rose-950/60 hover:text-rose-300 border border-slate-700/60 text-slate-300 font-medium transition text-xs active:scale-95">
+          Reset All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend & Guide Modal (Hidden by default) -->
+  <div id="guideModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 relative animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🌌</span>
+          <h3 class="text-lg font-bold text-white">Star Catcher Field Guide</h3>
+        </div>
+        <button id="closeGuideBtn" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs max-h-[70vh] overflow-y-auto pr-1">
+        <!-- Gold Star -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center text-xl shrink-0">
+            ★
+          </div>
+          <div>
+            <div class="font-bold text-amber-300 text-sm">Golden Star (+100)</div>
+            <p class="text-slate-400">Standard celestial star. Builds your combo counter when caught consecutively.</p>
+          </div>
+        </div>
+
+        <!-- Nova Star -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 flex items-center justify-center text-xl shrink-0">
+            ✦
+          </div>
+          <div>
+            <div class="font-bold text-purple-300 text-sm">Supernova Star (+250)</div>
+            <p class="text-slate-400">Emits a cosmic shockwave that automatically collects all active stars and clears hazards!</p>
+          </div>
+        </div>
+
+        <!-- Frost Star -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-xl shrink-0">
+            ❄
+          </div>
+          <div>
+            <div class="font-bold text-cyan-300 text-sm">Frost Star (+150)</div>
+            <p class="text-slate-400">Freezes the game clock and slows star movement for 4 seconds so you can sweep the sky!</p>
+          </div>
+        </div>
+
+        <!-- Chrono Star -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center text-xl shrink-0">
+            ⏱
+          </div>
+          <div>
+            <div class="font-bold text-emerald-300 text-sm">Chrono Star (+150)</div>
+            <p class="text-slate-400">Grants <span class="text-emerald-300 font-semibold">+4 seconds</span> in Time Attack mode!</p>
+          </div>
+        </div>
+
+        <!-- Rainbow Comet -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500/20 via-amber-500/20 to-cyan-500/20 border border-pink-400/40 text-pink-300 flex items-center justify-center text-xl shrink-0">
+            🌈
+          </div>
+          <div>
+            <div class="font-bold text-pink-300 text-sm">Rainbow Comet (+500)</div>
+            <p class="text-slate-400">Ultra-rare and fast moving! Catches ignite a 5-second <span class="text-amber-300 font-semibold">Star Frenzy</span> with double points.</p>
+          </div>
+        </div>
+
+        <!-- Hazard Bomb -->
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-rose-500/30 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center text-xl shrink-0">
+            💣
+          </div>
+          <div>
+            <div class="font-bold text-rose-400 text-sm">Dark Void Hazard (DANGER)</div>
+            <p class="text-slate-400">Do NOT click! Penalizes score (-200), destroys your combo streak, and subtracts a life in Classic mode.</p>
+          </div>
+        </div>
+      </div>
+
+      <button id="gotItGuideBtn" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+        Understood, Let's Catch!
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats & Achievements Modal -->
+  <div id="statsModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 relative animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🏆</span>
+          <h3 class="text-lg font-bold text-white">Pilot Stats & Records</h3>
+        </div>
+        <button id="closeStatsBtn" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <!-- Stat Counters Grid -->
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-[10px] uppercase font-bold">Total Stars Caught</div>
+          <div id="statTotalCaught" class="text-xl font-black text-amber-400 font-mono-numbers mt-0.5">0</div>
+        </div>
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-[10px] uppercase font-bold">Highest Combo</div>
+          <div id="statMaxCombo" class="text-xl font-black text-purple-400 font-mono-numbers mt-0.5">1x</div>
+        </div>
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-[10px] uppercase font-bold">Games Played</div>
+          <div id="statGamesPlayed" class="text-xl font-black text-slate-200 font-mono-numbers mt-0.5">0</div>
+        </div>
+        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-[10px] uppercase font-bold">Overall Accuracy</div>
+          <div id="statAccuracy" class="text-xl font-black text-emerald-400 font-mono-numbers mt-0.5">100%</div>
+        </div>
+      </div>
+
+      <!-- High Scores Breakdown by Mode -->
+      <div class="flex flex-col gap-1.5 text-xs bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+        <span class="text-[10px] uppercase font-bold text-slate-400">High Scores by Mode</span>
+        <div class="flex justify-between items-center text-slate-300 pt-1">
+          <span>⏱️ Time Attack:</span>
+          <span id="bestTimeAttack" class="font-bold text-amber-400 font-mono-numbers">0</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-300">
+          <span>❤️ Classic (3 Lives):</span>
+          <span id="bestClassic" class="font-bold text-rose-400 font-mono-numbers">0</span>
+        </div>
+        <div class="flex justify-between items-center text-slate-300">
+          <span>✨ Zen Chill:</span>
+          <span id="bestZen" class="font-bold text-cyan-400 font-mono-numbers">0</span>
+        </div>
+      </div>
+
+      <button id="closeStatsBtn2" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+        Back to Game
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Engine Script -->
+  <script>
+    /* =====================================================================
+       STAR CATCHER DELUXE — Complete Game Engine
+       Features:
+       - 3 Game Modes: Time Attack, Classic (Lives), Zen
+       - 6 Celestial Star & Hazard Types (Gold, Nova, Freeze, Chrono, Comet, Bomb)
+       - Dynamic Combo Multiplier (up to 5x) & Star Frenzy Mode
+       - Procedural Web Audio Synth (SFX & Ambient Cosmic Drone)
+       - Responsive Retina Canvas Engine with Particles, Floating Scores & Screen Shake
+       - LocalStorage High Score & Lifetime Statistics
+    ===================================================================== */
+
+    // DOM Elements
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+    
+    // UI Displays
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const comboDisplay = document.getElementById('comboDisplay');
+    const frenzyBadge = document.getElementById('frenzyBadge');
+    const modeStatusLabel = document.getElementById('modeStatusLabel');
+    const modeStatusValue = document.getElementById('modeStatusValue');
+    const timerBarFill = document.getElementById('timerBarFill');
+    const frostOverlay = document.getElementById('frostOverlay');
+
+    // Overlays & Modals
+    const startOverlay = document.getElementById('startOverlay');
+    const pauseOverlay = document.getElementById('pauseOverlay');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const newBestBanner = document.getElementById('newBestBanner');
+    const finalScoreVal = document.getElementById('finalScoreVal');
+    const finalStarsVal = document.getElementById('finalStarsVal');
+    const finalStreakVal = document.getElementById('finalStreakVal');
+    const finalAccuracyVal = document.getElementById('finalAccuracyVal');
+    const guideModal = document.getElementById('guideModal');
+    const statsModal = document.getElementById('statsModal');
+
+    // Buttons
+    const startGameBtn = document.getElementById('startGameBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeGameBtn = document.getElementById('resumeGameBtn');
+    const quitGameBtn = document.getElementById('quitGameBtn');
+    const resetScoreBtn = document.getElementById('resetScoreBtn');
+    const sfxToggleBtn = document.getElementById('sfxToggleBtn');
+    const bgmToggleBtn = document.getElementById('bgmToggleBtn');
+    const sfxIcon = document.getElementById('sfxIcon');
+    const bgmIcon = document.getElementById('bgmIcon');
+    const guideBtn = document.getElementById('guideBtn');
+    const closeGuideBtn = document.getElementById('closeGuideBtn');
+    const gotItGuideBtn = document.getElementById('gotItGuideBtn');
+    const statsModalBtn = document.getElementById('statsModalBtn');
+    const closeStatsBtn = document.getElementById('closeStatsBtn');
+    const closeStatsBtn2 = document.getElementById('closeStatsBtn2');
+
+    // Mode Buttons
+    const modeTabs = {
+      timeAttack: document.getElementById('modeTimeAttack'),
+      classic: document.getElementById('modeClassic'),
+      zen: document.getElementById('modeZen')
+    };
+
+    // Stats Modal Elements
+    const statTotalCaught = document.getElementById('statTotalCaught');
+    const statMaxCombo = document.getElementById('statMaxCombo');
+    const statGamesPlayed = document.getElementById('statGamesPlayed');
+    const statAccuracy = document.getElementById('statAccuracy');
+    const bestTimeAttack = document.getElementById('bestTimeAttack');
+    const bestClassic = document.getElementById('bestClassic');
+    const bestZen = document.getElementById('bestZen');
+
+    /* =====================================================================
+       Game State
+    ===================================================================== */
+    let currentMode = 'timeAttack'; // 'timeAttack' | 'classic' | 'zen'
+    let isPlaying = false;
+    let isPaused = false;
+    let score = 0;
+    let highScores = {
+      timeAttack: 0,
+      classic: 0,
+      zen: 0
+    };
+    let persistentStats = {
+      totalCaught: 0,
+      maxCombo: 1,
+      gamesPlayed: 0,
+      totalClicks: 0,
+      successfulClicks: 0
+    };
+
+    // Round stats
+    let roundStarsCaught = 0;
+    let roundClicks = 0;
+    let roundHits = 0;
+
+    // Time & Lives
+    let timeRemaining = 30.0;
+    const initialTime = 30.0;
+    let livesRemaining = 3;
+
+    // Combo system
+    let combo = 1;
+    let maxRoundCombo = 1;
+    let comboTimer = 0;
+    const comboDuration = 2.2; // seconds to keep combo alive
+    let isFrenzy = false;
+    let frenzyTimer = 0;
+
+    // Freeze Time Power-up
+    let freezeTimer = 0;
+
+    // Screen Shake
+    let screenShake = 0;
+
+    // Audio State
+    let audioCtx = null;
+    let sfxEnabled = true;
+    let bgmEnabled = false;
+    let bgmOscillator1 = null;
+    let bgmOscillator2 = null;
+    let bgmGain = null;
+    let bgmInterval = null;
+
+    // Entities
+    let stars = [];
+    let particles = [];
+    let floatingTexts = [];
+    let backgroundStars = [];
+    let cursorParticles = [];
+
+    // Animation & Clock
+    let animationId = null;
+    let lastTimestamp = 0;
+
+    /* =====================================================================
+       Star Types Definition
+    ===================================================================== */
+    const STAR_TYPES = {
+      GOLD: {
+        name: 'Gold',
+        points: 100,
+        color: '#fbbf24',
+        accent: '#fef08a',
+        innerGlow: 'rgba(251, 191, 36, 0.5)',
+        radius: 26,
+        spikes: 5,
+        weight: 65
+      },
+      NOVA: {
+        name: 'Supernova',
+        points: 250,
+        color: '#c084fc',
+        accent: '#f3e8ff',
+        innerGlow: 'rgba(192, 132, 252, 0.6)',
+        radius: 28,
+        spikes: 4,
+        weight: 10
+      },
+      FROST: {
+        name: 'Frost',
+        points: 150,
+        color: '#38bdf8',
+        accent: '#e0f2fe',
+        innerGlow: 'rgba(56, 189, 248, 0.6)',
+        radius: 25,
+        spikes: 6,
+        weight: 9
+      },
+      CHRONO: {
+        name: 'Chrono',
+        points: 150,
+        color: '#34d399',
+        accent: '#d1fae5',
+        innerGlow: 'rgba(52, 211, 153, 0.6)',
+        radius: 25,
+        spikes: 5,
+        weight: 9
+      },
+      COMET: {
+        name: 'Rainbow Comet',
+        points: 500,
+        color: '#f43f5e',
+        accent: '#ffe4e6',
+        innerGlow: 'rgba(244, 63, 94, 0.6)',
+        radius: 22,
+        spikes: 7,
+        weight: 4
+      },
+      BOMB: {
+        name: 'Dark Void',
+        points: -200,
+        color: '#ef4444',
+        accent: '#450a0a',
+        innerGlow: 'rgba(239, 68, 68, 0.7)',
+        radius: 24,
+        spikes: 8,
+        weight: 12
+      }
+    };
+
+    /* =====================================================================
+       Persistent Storage (LocalStorage)
+    ===================================================================== */
+    function loadSavedData() {
+      try {
+        const savedScores = localStorage.getItem('star_catcher_high_scores');
+        if (savedScores) highScores = Object.assign(highScores, JSON.parse(savedScores));
+
+        const savedStats = localStorage.getItem('star_catcher_stats');
+        if (savedStats) persistentStats = Object.assign(persistentStats, JSON.parse(savedStats));
+      } catch (e) {
+        console.warn('LocalStorage error or not available:', e);
+      }
+      updateUI();
+    }
+
+    function saveSavedData() {
+      try {
+        localStorage.setItem('star_catcher_high_scores', JSON.stringify(highScores));
+        localStorage.setItem('star_catcher_stats', JSON.stringify(persistentStats));
+      } catch (e) {}
+    }
+
+    /* =====================================================================
+       Web Audio API Synthesizer (No external sound files)
+    ===================================================================== */
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Pentatonic scale chime for catch combos
+    const PENTATONIC_FREQS = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
+
+    function playCatchSound(type, comboMultiplier) {
+      if (!sfxEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'BOMB') {
+        // Low explosive thud & glitch
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(35, now + 0.35);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+        return;
+      }
+
+      if (type === 'FROST') {
+        // Crystalline ice chime
+        [1046.5, 1567.98, 2093.0].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.12, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.28);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.28);
+        });
+        return;
+      }
+
+      if (type === 'CHRONO') {
+        // Dual clock bell
+        [659.25, 987.77].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.25);
+        });
+        return;
+      }
+
+      if (type === 'NOVA') {
+        // Resonant harmonic sweep
+        [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.25);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        });
+        return;
+      }
+
+      // Standard / Comet musical chime tuned to combo level
+      const noteIdx = Math.min((comboMultiplier - 1), PENTATONIC_FREQS.length - 1);
+      const baseFreq = PENTATONIC_FREQS[noteIdx] || 523.25;
+
+      const osc = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc2.type = 'triangle';
+
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.33, now + 0.12);
+
+      osc2.frequency.setValueAtTime(baseFreq * 2, now);
+      osc2.frequency.exponentialRampToValueAtTime(baseFreq * 2.66, now + 0.12);
+
+      const vol = isFrenzy ? 0.25 : 0.18;
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      osc.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now);
+      osc2.start(now);
+      osc.stop(now + 0.22);
+      osc2.stop(now + 0.22);
+    }
+
+    function playGameOverSound(isHighScore) {
+      if (!sfxEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      if (isHighScore) {
+        // Triumphant Fanfare (C5, E5, G5, C6)
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.4);
+        });
+      } else {
+        // Soft descending tones
+        [440, 392, 349.23, 293.66].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+          gain.gain.setValueAtTime(0.15, now + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.35);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.12);
+          osc.stop(now + idx * 0.12 + 0.35);
+        });
+      }
+    }
+
+    // Ambient Space BGM Generator (Dreamy synth arpeggios)
+    function toggleBGM(enable) {
+      bgmEnabled = enable !== undefined ? enable : !bgmEnabled;
+      bgmIcon.textContent = bgmEnabled ? '🎶' : '🎵';
+      bgmToggleBtn.classList.toggle('text-amber-300', bgmEnabled);
+      bgmToggleBtn.classList.toggle('border-amber-400/50', bgmEnabled);
+
+      if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+      }
+
+      if (!bgmEnabled) return;
+
+      initAudio();
+      if (!audioCtx) return;
+
+      const spaceChord = [261.63, 329.63, 392.00, 523.25, 659.25]; // C major pentatonic
+      bgmInterval = setInterval(() => {
+        if (!bgmEnabled || isPaused || !isPlaying) return;
+        const randomNote = spaceChord[Math.floor(Math.random() * spaceChord.length)];
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(randomNote, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.035, now + 0.6);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 2.3);
+      }, 1600);
+    }
+
+    /* =====================================================================
+       Canvas Setup & Starfield Generation
+    ===================================================================== */
+    let logicalWidth = 480;
+    let logicalHeight = 360;
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2 for crisp performance
+      
+      logicalWidth = rect.width || 480;
+      logicalHeight = rect.height || 360;
+
+      canvas.width = Math.floor(logicalWidth * dpr);
+      canvas.height = Math.floor(logicalHeight * dpr);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset
+      ctx.scale(dpr, dpr);
+
+      // Keep active stars within canvas bounds
+      stars.forEach(s => {
+        const pad = s.radius + 15;
+        s.x = Math.max(pad, Math.min(logicalWidth - pad, s.x));
+        s.y = Math.max(pad, Math.min(logicalHeight - pad, s.y));
+      });
+    }
+
+    function initBackgroundStars() {
+      backgroundStars = [];
+      const starCount = 55;
+      for (let i = 0; i < starCount; i++) {
+        backgroundStars.push({
+          x: Math.random() * logicalWidth,
+          y: Math.random() * logicalHeight,
+          radius: Math.random() * 1.5 + 0.5,
+          alpha: Math.random() * 0.7 + 0.2,
+          speed: Math.random() * 0.03 + 0.01,
+          twinklePhase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    /* =====================================================================
+       Star Entity Management
+    ===================================================================== */
+    function getRandomStarType() {
+      // Don't spawn bomb as first star
+      if (stars.length === 0 && score === 0) return 'GOLD';
+
+      const weights = { ...STAR_TYPES };
+      // Zen mode has no bombs
+      if (currentMode === 'zen') {
+        weights.BOMB.weight = 0;
+      }
+      // Time Attack favors chrono stars
+      if (currentMode !== 'timeAttack') {
+        weights.CHRONO.weight = 0;
+      }
+
+      let totalWeight = 0;
+      for (const key in weights) {
+        totalWeight += weights[key].weight;
+      }
+
+      let rand = Math.random() * totalWeight;
+      for (const key in weights) {
+        if (rand < weights[key].weight) return key;
+        rand -= weights[key].weight;
+      }
+      return 'GOLD';
+    }
+
+    function createStar(specifiedType = null) {
+      const typeKey = specifiedType || getRandomStarType();
+      const config = STAR_TYPES[typeKey];
+      const padding = config.radius + 20;
+
+      const maxX = Math.max(padding * 2, logicalWidth) - padding * 2;
+      const maxY = Math.max(padding * 2, logicalHeight) - padding * 2;
+
+      // Random drift velocity
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (typeKey === 'COMET') ? (Math.random() * 1.5 + 1.2) : (Math.random() * 0.6 + 0.2);
+
+      // Max lifespan based on game mode & difficulty
+      let maxLifespan = 4.5;
+      if (currentMode === 'classic') maxLifespan = Math.max(2.4, 4.5 - (score / 1500));
+      else if (currentMode === 'timeAttack') maxLifespan = Math.max(2.8, 5.0 - (score / 2000));
+      else maxLifespan = 9999; // Zen mode stars don't auto-decay
+
+      return {
+        id: Math.random().toString(36).substring(2, 9),
+        type: typeKey,
+        x: padding + Math.random() * maxX,
+        y: padding + Math.random() * maxY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: config.radius,
+        popScale: 0.1,
+        targetScale: 1.0,
+        rotation: 0,
+        rotSpeed: (Math.random() - 0.5) * 0.04,
+        pulsePhase: Math.random() * Math.PI,
+        lifespan: maxLifespan,
+        maxLifespan: maxLifespan,
+        glowPulse: 0
+      };
+    }
+
+    function spawnStarsIfNeeded() {
+      // Max simultaneous stars based on score
+      let desiredCount = 1;
+      if (score >= 400) desiredCount = 2;
+      if (score >= 1500) desiredCount = 3;
+      if (isFrenzy) desiredCount = Math.min(desiredCount + 1, 4);
+
+      while (stars.length < desiredCount) {
+        stars.push(createStar());
+      }
+    }
+
+    /* =====================================================================
+       Particle & Floating Text Effects
+    ===================================================================== */
+    function spawnParticles(x, y, color, count = 16, speedMult = 1.0) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (Math.random() * 3.5 + 1.2) * speedMult;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: Math.random() * 3.5 + 1.5,
+          color,
+          alpha: 1.0,
+          decay: Math.random() * 0.03 + 0.02,
+          gravity: 0.05
+        });
+      }
+    }
+
+    function spawnRingWave(x, y, color) {
+      particles.push({
+        isRing: true,
+        x,
+        y,
+        radius: 10,
+        maxRadius: 65,
+        color,
+        alpha: 0.8,
+        growth: 3.5
+      });
+    }
+
+    function spawnFloatingText(text, x, y, color = '#fbbf24', fontSize = 16) {
+      floatingTexts.push({
+        text,
+        x,
+        y,
+        color,
+        fontSize,
+        alpha: 1.0,
+        vy: -1.4,
+        scale: 1.2
+      });
+    }
+
+    function triggerScreenShake(intensity = 6) {
+      screenShake = intensity;
+    }
+
+    /* =====================================================================
+       Drawing Helpers
+    ===================================================================== */
+    function drawStarPolygon(cx, cy, spikes, outerRadius, innerRadius) {
+      let rot = (Math.PI / 2) * 3;
+      let x = cx;
+      let y = cy;
+      const step = Math.PI / spikes;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - outerRadius);
+      for (let i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerRadius;
+        y = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+
+        x = cx + Math.cos(rot) * innerRadius;
+        y = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+      }
+      ctx.lineTo(cx, cy - outerRadius);
+      ctx.closePath();
+    }
+
+    /* =====================================================================
+       Render Loop
+    ===================================================================== */
+    function render(dt) {
+      ctx.save();
+      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+      // Screen Shake translation
+      if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake * 2;
+        const sy = (Math.random() - 0.5) * screenShake * 2;
+        ctx.translate(sx, sy);
+        screenShake = Math.max(0, screenShake - dt * 25);
+      }
+
+      // 1. Space Grid & Cosmic Backdrop
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
+      ctx.lineWidth = 1;
+      const gridSize = 32;
+      for (let x = 0; x < logicalWidth; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, logicalHeight);
+        ctx.stroke();
+      }
+      for (let y = 0; y < logicalHeight; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(logicalWidth, y);
+        ctx.stroke();
+      }
+
+      // 2. Distant Twinkling Background Stars
+      backgroundStars.forEach(bs => {
+        bs.twinklePhase += bs.speed;
+        const currentAlpha = bs.alpha * (0.6 + Math.sin(bs.twinklePhase) * 0.4);
+        ctx.fillStyle = `rgba(226, 232, 240, ${currentAlpha})`;
+        ctx.beginPath();
+        ctx.arc(bs.x, bs.y, bs.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 3. Cursor Stardust Particles
+      for (let i = cursorParticles.length - 1; i >= 0; i--) {
+        const cp = cursorParticles[i];
+        cp.x += cp.vx;
+        cp.y += cp.vy;
+        cp.alpha -= dt * 2.2;
+        if (cp.alpha <= 0) {
+          cursorParticles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = `rgba(251, 191, 36, ${cp.alpha * 0.8})`;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, cp.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 4. Render Active Game Stars
+      const timeScale = freezeTimer > 0 ? 0.25 : 1.0;
+
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        const config = STAR_TYPES[s.type];
+
+        // Update physics & scale
+        s.popScale += (s.targetScale - s.popScale) * 0.18;
+        s.rotation += s.rotSpeed * timeScale;
+        s.pulsePhase += 0.06 * timeScale;
+
+        // Position drift & bounce
+        s.x += s.vx * timeScale;
+        s.y += s.vy * timeScale;
+
+        const pad = s.radius + 15;
+        if (s.x < pad) { s.x = pad; s.vx *= -1; }
+        if (s.x > logicalWidth - pad) { s.x = logicalWidth - pad; s.vx *= -1; }
+        if (s.y < pad) { s.y = pad; s.vy *= -1; }
+        if (s.y > logicalHeight - pad) { s.y = logicalHeight - pad; s.vy *= -1; }
+
+        // Lifespan decay (except in Zen mode)
+        if (currentMode !== 'zen') {
+          s.lifespan -= dt * timeScale;
+          if (s.lifespan <= 0) {
+            // Star expired!
+            if (s.type !== 'BOMB') {
+              if (currentMode === 'classic') {
+                livesRemaining--;
+                triggerScreenShake(4);
+                spawnFloatingText('MISSED! -1 ❤️', s.x, s.y, '#f43f5e', 14);
+                updateUI();
+                if (livesRemaining <= 0) {
+                  endGame();
+                  break;
+                }
+              }
+            }
+            stars.splice(i, 1);
+            continue;
+          }
+        }
+
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rotation);
+
+        const pulseScale = 1 + Math.sin(s.pulsePhase) * 0.06;
+        const currentR = s.radius * s.popScale * pulseScale;
+
+        // Draw Lifespan Progress Ring (if not Zen mode)
+        if (currentMode !== 'zen' && s.type !== 'BOMB') {
+          const lifePct = Math.max(0, s.lifespan / s.maxLifespan);
+          ctx.beginPath();
+          ctx.arc(0, 0, currentR * 1.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * lifePct);
+          ctx.strokeStyle = lifePct < 0.3 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(251, 191, 36, 0.4)';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+
+        // Outer Radial Glow
+        const grad = ctx.createRadialGradient(0, 0, currentR * 0.2, 0, 0, currentR * 1.8);
+        grad.addColorStop(0, config.innerGlow);
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, currentR * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw the Star Polygon
+        const innerRatio = (s.type === 'COMET') ? 0.38 : (s.type === 'NOVA') ? 0.35 : 0.48;
+        drawStarPolygon(0, 0, config.spikes, currentR, currentR * innerRatio);
+
+        // Fill Star Body
+        if (s.type === 'COMET') {
+          // Shifting rainbow gradient
+          const cometHue = (Date.now() / 8) % 360;
+          ctx.fillStyle = `hsl(${cometHue}, 90%, 65%)`;
+        } else if (s.type === 'BOMB') {
+          // Pulsing danger red/dark gradient
+          ctx.fillStyle = '#dc2626';
+        } else {
+          ctx.fillStyle = config.color;
+        }
+        ctx.fill();
+
+        // Star Outline / Highlight
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = config.accent;
+        ctx.stroke();
+
+        // Center Icon/Glint Details
+        if (s.type === 'CHRONO') {
+          ctx.fillStyle = '#064e3b';
+          ctx.beginPath();
+          ctx.arc(0, 0, currentR * 0.32, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#d1fae5';
+          ctx.fillRect(-1.5, -currentR * 0.22, 3, currentR * 0.25);
+          ctx.fillRect(-1.5, -1.5, currentR * 0.2, 3);
+        } else if (s.type === 'FROST') {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(0, 0, currentR * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (s.type === 'BOMB') {
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(0, 0, currentR * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(-1, -currentR * 0.2, 2, currentR * 0.4);
+          ctx.fillRect(-currentR * 0.2, -1, currentR * 0.4, 2);
+        }
+
+        ctx.restore();
+      }
+
+      // 5. Render Particle FX (Sparks & Expanding Shockwave Rings)
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        if (p.isRing) {
+          p.radius += p.growth;
+          p.alpha -= dt * 2.5;
+          if (p.alpha <= 0 || p.radius >= p.maxRadius) {
+            particles.splice(i, 1);
+            continue;
+          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 3 * p.alpha;
+          ctx.stroke();
+        } else {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.alpha -= p.decay;
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // 6. Floating Score Numbers
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.alpha -= dt * 1.5;
+        ft.scale += dt * 0.3;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.alpha);
+        ctx.font = `bold ${Math.round(ft.fontSize * ft.scale)}px 'Outfit', sans-serif`;
+        ctx.fillStyle = ft.color;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = ft.color;
+        ctx.shadowBlur = 8;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    /* =====================================================================
+       Main Animation Loop
+    ===================================================================== */
+    function gameLoop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // Cap delta to prevent jump
+      lastTimestamp = timestamp;
+
+      if (isPlaying && !isPaused) {
+        // Mode specific clock countdown
+        if (currentMode === 'timeAttack') {
+          if (freezeTimer > 0) {
+            freezeTimer -= dt;
+            frostOverlay.style.opacity = '1';
+          } else {
+            frostOverlay.style.opacity = '0';
+            timeRemaining -= dt;
+          }
+
+          if (timeRemaining <= 0) {
+            timeRemaining = 0;
+            endGame();
+          }
+        } else {
+          frostOverlay.style.opacity = freezeTimer > 0 ? '1' : '0';
+          if (freezeTimer > 0) freezeTimer -= dt;
+        }
+
+        // Combo decay timer
+        if (combo > 1) {
+          comboTimer -= dt;
+          if (comboTimer <= 0) {
+            combo = 1;
+            updateComboUI();
+          }
+        }
+
+        // Frenzy timer
+        if (isFrenzy) {
+          frenzyTimer -= dt;
+          if (frenzyTimer <= 0) {
+            isFrenzy = false;
+            frenzyBadge.classList.add('hidden');
+          }
+        }
+
+        // Keep star pool full
+        spawnStarsIfNeeded();
+
+        // Update timer UI bar
+        updateTimerBar();
+      }
+
+      render(dt);
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    /* =====================================================================
+       Player Interaction (Click / Touch)
+    ===================================================================== */
+    function handlePointer(clientX, clientY) {
+      if (!isPlaying || isPaused) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const clickX = clientX - rect.left;
+      const clickY = clientY - rect.top;
+
+      roundClicks++;
+      persistentStats.totalClicks++;
+
+      let hitStar = null;
+      let hitIndex = -1;
+
+      // Check hits from topmost to bottom
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        const dx = clickX - s.x;
+        const dy = clickY - s.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Generous touch hit radius
+        if (dist <= s.radius * 1.45) {
+          hitStar = s;
+          hitIndex = i;
+          break;
+        }
+      }
+
+      if (hitStar) {
+        roundHits++;
+        persistentStats.successfulClicks++;
+
+        processStarCatch(hitStar, hitIndex);
+      } else {
+        // Miss click
+        if (combo > 1) {
+          combo = 1;
+          updateComboUI();
+          spawnFloatingText('Combo Lost!', clickX, clickY, '#94a3b8', 12);
+        }
+      }
+    }
+
+    function processStarCatch(star, index) {
+      stars.splice(index, 1);
+      const config = STAR_TYPES[star.type];
+
+      // Handle Bomb Penalty
+      if (star.type === 'BOMB') {
+        combo = 1;
+        updateComboUI();
+        score = Math.max(0, score + config.points);
+        triggerScreenShake(10);
+        spawnParticles(star.x, star.y, '#ef4444', 24, 1.5);
+        spawnFloatingText(`${config.points} ⚠️`, star.x, star.y, '#ef4444', 18);
+        playCatchSound('BOMB', 1);
+
+        if (currentMode === 'classic') {
+          livesRemaining--;
+          if (livesRemaining <= 0) {
+            updateUI();
+            endGame();
+            return;
+          }
+        }
+        updateUI();
+        return;
+      }
+
+      // Combo Advancement
+      comboTimer = comboDuration;
+      combo = Math.min(combo + 1, 5);
+      if (combo > maxRoundCombo) maxRoundCombo = combo;
+      if (combo > persistentStats.maxCombo) persistentStats.maxCombo = combo;
+      updateComboUI();
+
+      // Calculate Points
+      let earnedPoints = config.points * combo;
+      if (isFrenzy) earnedPoints *= 2;
+      score += earnedPoints;
+      roundStarsCaught++;
+      persistentStats.totalCaught++;
+
+      // Trigger Visuals & Sound
+      playCatchSound(star.type, combo);
+      spawnParticles(star.x, star.y, config.color, 20, 1.2);
+      spawnRingWave(star.x, star.y, config.color);
+      spawnFloatingText(`+${earnedPoints}`, star.x, star.y, config.color, 16 + combo * 2);
+
+      // Star Special Abilities
+      if (star.type === 'CHRONO') {
+        if (currentMode === 'timeAttack') {
+          timeRemaining = Math.min(timeRemaining + 4.0, 99.0);
+          spawnFloatingText('+4s ⏱️', star.x, star.y - 25, '#34d399', 18);
+        }
+      } else if (star.type === 'FROST') {
+        freezeTimer = 4.0;
+        spawnFloatingText('FREEZE! ❄️', star.x, star.y - 25, '#38bdf8', 18);
+      } else if (star.type === 'NOVA') {
+        // Shockwave catches all remaining stars
+        triggerScreenShake(7);
+        spawnRingWave(star.x, star.y, '#c084fc');
+        spawnFloatingText('SUPERNOVA! ✦', star.x, star.y - 25, '#c084fc', 20);
+
+        const remaining = [...stars];
+        stars = [];
+        remaining.forEach(rs => {
+          if (rs.type !== 'BOMB') {
+            const pts = STAR_TYPES[rs.type].points * combo;
+            score += pts;
+            roundStarsCaught++;
+            persistentStats.totalCaught++;
+            spawnParticles(rs.x, rs.y, STAR_TYPES[rs.type].color, 14);
+            spawnFloatingText(`+${pts}`, rs.x, rs.y, STAR_TYPES[rs.type].color, 14);
+          }
+        });
+      } else if (star.type === 'COMET') {
+        isFrenzy = true;
+        frenzyTimer = 5.0;
+        frenzyBadge.classList.remove('hidden');
+        triggerScreenShake(5);
+        spawnFloatingText('FRENZY 2X! 🌈', star.x, star.y - 25, '#f43f5e', 20);
+      }
+
+      // Time bonus in Time Attack for regular stars
+      if (currentMode === 'timeAttack' && star.type === 'GOLD') {
+        timeRemaining = Math.min(timeRemaining + 0.5, 99.0);
+      }
+
+      updateUI();
+      saveSavedData();
+    }
+
+    /* =====================================================================
+       UI Updates & Modals
+    ===================================================================== */
+    function updateUI() {
+      scoreDisplay.textContent = score;
+      highScoreDisplay.textContent = highScores[currentMode] || 0;
+
+      if (currentMode === 'timeAttack') {
+        modeStatusLabel.textContent = 'Time Left';
+        const displaySecs = Math.max(0, timeRemaining).toFixed(1);
+        modeStatusValue.innerHTML = `<span id="timeVal">${displaySecs}</span><span class="text-xs text-slate-400 font-normal">s</span>`;
+      } else if (currentMode === 'classic') {
+        modeStatusLabel.textContent = 'Lives';
+        let hearts = '';
+        for (let i = 0; i < 3; i++) {
+          hearts += (i < livesRemaining) ? '❤️' : '🖤';
+        }
+        modeStatusValue.innerHTML = `<span class="text-lg">${hearts}</span>`;
+      } else {
+        modeStatusLabel.textContent = 'Stars';
+        modeStatusValue.innerHTML = `<span class="text-amber-400 font-mono-numbers">${roundStarsCaught}</span>`;
+      }
+    }
+
+    function updateComboUI() {
+      comboDisplay.textContent = `${combo}x`;
+      if (combo >= 4) {
+        comboDisplay.className = 'text-xl sm:text-2xl font-black text-rose-400 font-mono-numbers animate-pulse';
+      } else if (combo >= 2) {
+        comboDisplay.className = 'text-xl sm:text-2xl font-black text-purple-400 font-mono-numbers';
+      } else {
+        comboDisplay.className = 'text-xl sm:text-2xl font-black text-slate-400 font-mono-numbers';
+      }
+    }
+
+    function updateTimerBar() {
+      if (currentMode === 'timeAttack') {
+        const pct = Math.min(100, Math.max(0, (timeRemaining / initialTime) * 100));
+        timerBarFill.style.width = `${pct}%`;
+        if (pct < 20) {
+          timerBarFill.className = 'h-full bg-rose-500 transition-all duration-75 animate-pulse';
+        } else if (pct < 50) {
+          timerBarFill.className = 'h-full bg-amber-400 transition-all duration-75';
+        } else {
+          timerBarFill.className = 'h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-75';
+        }
+      } else {
+        timerBarFill.style.width = '100%';
+        timerBarFill.className = 'h-full bg-slate-800';
+      }
+    }
+
+    function switchMode(newMode) {
+      currentMode = newMode;
+      for (const key in modeTabs) {
+        const btn = modeTabs[key];
+        if (key === newMode) {
+          btn.className = 'mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        } else {
+          btn.className = 'mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 hover:text-slate-200 text-slate-400';
+        }
+      }
+      resetGame();
+    }
+
+    /* =====================================================================
+       Game Lifecycle
+    ===================================================================== */
+    function startGame() {
+      initAudio();
+      isPlaying = true;
+      isPaused = false;
+      score = 0;
+      roundStarsCaught = 0;
+      roundClicks = 0;
+      roundHits = 0;
+      combo = 1;
+      maxRoundCombo = 1;
+      timeRemaining = initialTime;
+      livesRemaining = 3;
+      freezeTimer = 0;
+      isFrenzy = false;
+      stars = [];
+      particles = [];
+      floatingTexts = [];
+
+      startOverlay.classList.add('hidden');
+      pauseOverlay.classList.add('hidden');
+      gameOverOverlay.classList.add('hidden');
+      newBestBanner.classList.add('hidden');
+      frenzyBadge.classList.add('hidden');
+
+      spawnStarsIfNeeded();
+      updateUI();
+      updateComboUI();
+
+      if (bgmEnabled) toggleBGM(true);
+    }
+
+    function pauseGame() {
+      if (!isPlaying) return;
+      isPaused = !isPaused;
+      pauseOverlay.classList.toggle('hidden', !isPaused);
+      pauseBtn.textContent = isPaused ? '▶' : '⏸';
+    }
+
+    function endGame() {
+      isPlaying = false;
+      persistentStats.gamesPlayed++;
+
+      const isHighScore = score > (highScores[currentMode] || 0);
+      if (isHighScore) {
+        highScores[currentMode] = score;
+        newBestBanner.classList.remove('hidden');
+      } else {
+        newBestBanner.classList.add('hidden');
+      }
+
+      saveSavedData();
+      playGameOverSound(isHighScore);
+
+      // Populate Game Over Modal
+      finalScoreVal.textContent = score;
+      finalStarsVal.textContent = roundStarsCaught;
+      finalStreakVal.textContent = `${maxRoundCombo}x`;
+
+      const accuracy = roundClicks > 0 ? Math.round((roundHits / roundClicks) * 100) : 100;
+      finalAccuracyVal.textContent = `${accuracy}%`;
+
+      gameOverOverlay.classList.remove('hidden');
+      updateUI();
+    }
+
+    function resetGame() {
+      isPlaying = false;
+      isPaused = false;
+      score = 0;
+      stars = [];
+      particles = [];
+      floatingTexts = [];
+      freezeTimer = 0;
+      isFrenzy = false;
+      frenzyBadge.classList.add('hidden');
+
+      startOverlay.classList.remove('hidden');
+      pauseOverlay.classList.add('hidden');
+      gameOverOverlay.classList.add('hidden');
+
+      updateUI();
+    }
+
+    function openStatsModal() {
+      statTotalCaught.textContent = persistentStats.totalCaught;
+      statMaxCombo.textContent = `${persistentStats.maxCombo}x`;
+      statGamesPlayed.textContent = persistentStats.gamesPlayed;
+
+      const acc = persistentStats.totalClicks > 0
+        ? Math.round((persistentStats.successfulClicks / persistentStats.totalClicks) * 100)
+        : 100;
+      statAccuracy.textContent = `${acc}%`;
+
+      bestTimeAttack.textContent = highScores.timeAttack || 0;
+      bestClassic.textContent = highScores.classic || 0;
+      bestZen.textContent = highScores.zen || 0;
+
+      statsModal.classList.remove('hidden');
+    }
+
+    /* =====================================================================
+       Event Listeners
+    ===================================================================== */
+    // Canvas pointer event
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handlePointer(e.clientX, e.clientY);
+    });
+
+    // Stardust cursor effect
+    canvas.addEventListener('pointermove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (Math.random() < 0.45) {
+        cursorParticles.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          size: Math.random() * 2 + 1,
+          alpha: 0.9
+        });
+      }
+    });
+
+    // Buttons
+    startGameBtn.addEventListener('click', startGame);
+    playAgainBtn.addEventListener('click', startGame);
+    pauseBtn.addEventListener('click', pauseGame);
+    resumeGameBtn.addEventListener('click', pauseGame);
+    quitGameBtn.addEventListener('click', resetGame);
+
+    resetScoreBtn.addEventListener('click', () => {
+      if (confirm('Reset high scores and personal stats?')) {
+        highScores = { timeAttack: 0, classic: 0, zen: 0 };
+        persistentStats = { totalCaught: 0, maxCombo: 1, gamesPlayed: 0, totalClicks: 0, successfulClicks: 0 };
+        saveSavedData();
+        resetGame();
+      }
+    });
+
+    // Mode Switchers
+    modeTabs.timeAttack.addEventListener('click', () => switchMode('timeAttack'));
+    modeTabs.classic.addEventListener('click', () => switchMode('classic'));
+    modeTabs.zen.addEventListener('click', () => switchMode('zen'));
+
+    // Sound Toggles
+    sfxToggleBtn.addEventListener('click', () => {
+      sfxEnabled = !sfxEnabled;
+      sfxIcon.textContent = sfxEnabled ? '🔊' : '🔇';
+      sfxToggleBtn.classList.toggle('text-slate-500', !sfxEnabled);
+      if (sfxEnabled) initAudio();
+    });
+
+    bgmToggleBtn.addEventListener('click', () => {
+      toggleBGM();
+    });
+
+    // Modals
+    guideBtn.addEventListener('click', () => guideModal.classList.remove('hidden'));
+    closeGuideBtn.addEventListener('click', () => guideModal.classList.add('hidden'));
+    gotItGuideBtn.addEventListener('click', () => guideModal.classList.add('hidden'));
+
+    statsModalBtn.addEventListener('click', openStatsModal);
+    closeStatsBtn.addEventListener('click', () => statsModal.classList.add('hidden'));
+    closeStatsBtn2.addEventListener('click', () => statsModal.classList.add('hidden'));
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) pauseGame();
+        else startGame();
+      } else if (e.code === 'KeyR') {
+        if (isPlaying) startGame();
+      } else if (e.code === 'Escape') {
+        guideModal.classList.add('hidden');
+        statsModal.classList.add('hidden');
+      }
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Initial boot
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      resizeCanvas();
+      initBackgroundStars();
+      gameLoop(0);
+    });
+  </script>
+</body>
+</html>
