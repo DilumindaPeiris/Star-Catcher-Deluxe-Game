@@ -190,6 +190,24 @@
     let backgroundStars = [];
     let cursorParticles = [];
     let particles = [];
+    let screenShake = 0;
+
+    function triggerScreenShake(intensity = 6) {
+      screenShake = intensity;
+    }
+
+    function spawnRingWave(x, y, color) {
+      particles.push({
+        isRing: true,
+        x,
+        y,
+        radius: 10,
+        maxRadius: 65,
+        color,
+        alpha: 0.8,
+        growth: 3.5
+      });
+    }
 
     function spawnParticles(x, y, color, count = 16, speedMult = 1.0) {
       for (let i = 0; i < count; i++) {
@@ -279,7 +297,15 @@
     }
 
     function render(dt) {
+      ctx.save();
       ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+      if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake * 2;
+        const sy = (Math.random() - 0.5) * screenShake * 2;
+        ctx.translate(sx, sy);
+        screenShake = Math.max(0, screenShake - dt * 25);
+      }
 
       // Render Active Stars
       stars.forEach(s => {
