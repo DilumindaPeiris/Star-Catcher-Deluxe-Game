@@ -27,6 +27,18 @@
     <div class="absolute -top-24 -left-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
+    <!-- Score Bar -->
+    <div class="grid grid-cols-2 gap-2 pt-1 z-10">
+      <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+        <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Score</div>
+        <div id="scoreDisplay" class="text-xl sm:text-2xl font-black text-amber-400 font-mono-numbers tracking-tight">0</div>
+      </div>
+      <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+        <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Best</div>
+        <div id="highScoreDisplay" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-numbers tracking-tight">0</div>
+      </div>
+    </div>
+
     <div class="w-full flex items-center justify-between z-10">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 font-black text-lg">
@@ -49,6 +61,10 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const container = document.getElementById('canvasContainer');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    let score = 0;
+    let highScore = 0;
 
     let logicalWidth = 480;
     let logicalHeight = 360;
@@ -76,6 +92,10 @@
         const dy = clickY - s.y;
         if (Math.sqrt(dx * dx + dy * dy) <= s.radius * 1.45) {
           stars.splice(i, 1);
+          score += STAR_TYPES[s.type].points;
+          if (score > highScore) highScore = score;
+          scoreDisplay.textContent = score;
+          highScoreDisplay.textContent = highScore;
           break;
         }
       }
