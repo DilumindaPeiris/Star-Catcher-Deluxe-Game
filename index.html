@@ -1676,6 +1676,20 @@
     closeStatsBtn.addEventListener('click', () => statsModal.classList.add('hidden'));
     closeStatsBtn2.addEventListener('click', () => statsModal.classList.add('hidden'));
 
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) pauseGame();
+        else startGame();
+      } else if (e.code === 'KeyR') {
+        if (isPlaying) startGame();
+      } else if (e.code === 'Escape') {
+        guideModal.classList.add('hidden');
+        statsModal.classList.add('hidden');
+      }
+    });
+
     window.addEventListener('resize', resizeCanvas);
 
     // Initial boot
