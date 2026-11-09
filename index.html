@@ -195,6 +195,20 @@
     let backgroundStars = [];
     let cursorParticles = [];
     let particles = [];
+    let floatingTexts = [];
+
+    function spawnFloatingText(text, x, y, color = '#fbbf24', fontSize = 16) {
+      floatingTexts.push({
+        text,
+        x,
+        y,
+        color,
+        fontSize,
+        alpha: 1.0,
+        vy: -1.4,
+        scale: 1.2
+      });
+    }
     let screenShake = 0;
 
     function triggerScreenShake(intensity = 6) {
