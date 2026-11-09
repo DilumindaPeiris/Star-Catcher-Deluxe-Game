@@ -1,0 +1,31 @@
+name: Bug Report
+description: Create a report to help us improve Star Catcher Deluxe
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report an issue!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: What steps led to the issue?
+      placeholder: |
+        1. Open index.html
+        2. Switch mode to Time Attack
+        3. Catch Frost Star
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / Device
+      placeholder: Chrome 130 on Windows 11 / Safari iOS
