@@ -55,6 +55,7 @@
     </div>
     <div id="canvasContainer" class="w-full aspect-[4/3] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden relative shadow-2xl select-none">
       <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
+      <div id="frostOverlay" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 border-[6px] border-cyan-400/40 bg-cyan-500/10 backdrop-blur-[0.5px]"></div>
     </div>
   </div>
   <script>
@@ -150,6 +151,26 @@
         innerGlow: 'rgba(244, 63, 94, 0.6)',
         radius: 22,
         spikes: 7,
+        weight: 10
+      },
+      FROST: {
+        name: 'Frost',
+        points: 150,
+        color: '#38bdf8',
+        accent: '#e0f2fe',
+        innerGlow: 'rgba(56, 189, 248, 0.6)',
+        radius: 25,
+        spikes: 6,
+        weight: 10
+      },
+      CHRONO: {
+        name: 'Chrono',
+        points: 150,
+        color: '#34d399',
+        accent: '#d1fae5',
+        innerGlow: 'rgba(52, 211, 153, 0.6)',
+        radius: 25,
+        spikes: 5,
         weight: 10
       }
     };
