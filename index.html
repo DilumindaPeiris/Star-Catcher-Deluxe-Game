@@ -129,7 +129,28 @@
         accent: '#fef08a',
         innerGlow: 'rgba(251, 191, 36, 0.5)',
         radius: 26,
-        spikes: 5
+        spikes: 5,
+        weight: 65
+      },
+      NOVA: {
+        name: 'Supernova',
+        points: 250,
+        color: '#c084fc',
+        accent: '#f3e8ff',
+        innerGlow: 'rgba(192, 132, 252, 0.6)',
+        radius: 28,
+        spikes: 4,
+        weight: 15
+      },
+      COMET: {
+        name: 'Rainbow Comet',
+        points: 500,
+        color: '#f43f5e',
+        accent: '#ffe4e6',
+        innerGlow: 'rgba(244, 63, 94, 0.6)',
+        radius: 22,
+        spikes: 7,
+        weight: 10
       }
     };
 
@@ -161,14 +182,23 @@
       ctx.closePath();
     }
 
+    function getRandomStarType() {
+      const rand = Math.random() * 100;
+      if (rand < 20) return 'NOVA';
+      if (rand < 30) return 'COMET';
+      return 'GOLD';
+    }
+
     function createStar() {
+      const typeKey = getRandomStarType();
+      const config = STAR_TYPES[typeKey];
       const config = STAR_TYPES.GOLD;
       const padding = config.radius + 20;
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 0.6 + 0.2;
 
       return {
-        type: 'GOLD',
+        type: typeKey,
         x: padding + Math.random() * (logicalWidth - padding * 2),
         y: padding + Math.random() * (logicalHeight - padding * 2),
         vx: Math.cos(angle) * speed,
