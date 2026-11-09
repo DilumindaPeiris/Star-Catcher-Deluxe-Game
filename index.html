@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Star Catcher — Deluxe Edition</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
@@ -20,427 +23,226 @@
       display: block;
       touch-action: none;
     }
+    /* Glow utilities */
+    .glow-gold {
+      box-shadow: 0 0 25px -5px rgba(251, 191, 36, 0.4);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.4);
+    }
+    .text-glow {
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 9999px;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 selection:bg-amber-500/30">
+
+  <!-- Main Game Card -->
   <div class="w-full max-w-xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 relative overflow-hidden">
+    
+    <!-- Ambient background light orb inside card -->
     <div class="absolute -top-24 -left-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Score Bar -->
-    <div class="grid grid-cols-2 gap-2 pt-1 z-10">
-      <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
-        <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Score</div>
-        <div id="scoreDisplay" class="text-xl sm:text-2xl font-black text-amber-400 font-mono-numbers tracking-tight">0</div>
+    <!-- Header & Mode Tabs -->
+    <div class="w-full flex flex-col gap-3 z-10">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 font-black text-lg">
+            ★
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">Star Catcher</h1>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">Deluxe</span>
+            </div>
+            <p class="text-xs text-slate-400 font-medium">Catch the celestial stars & build crazy combos</p>
+          </div>
+        </div>
+
+        <!-- Quick Sound & Help Toggles -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button id="sfxToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Sound FX">
+            <span id="sfxIcon">🔊</span>
+            <span class="hidden sm:inline text-[11px]">SFX</span>
+          </button>
+          <button id="bgmToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Cosmic BGM">
+            <span id="bgmIcon">🎵</span>
+            <span class="hidden sm:inline text-[11px]">Music</span>
+          </button>
+          <button id="statsModalBtn" class="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-amber-300 transition flex items-center gap-1 active:scale-95" title="View Stats & Achievements">
+            <span>🏆</span>
+            <span class="hidden sm:inline text-[11px]">Stats</span>
+          </button>
+          <button id="guideBtn" class="p-1.5 px-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition active:scale-95" title="Game Legend & Star Guide">
+            <span>❓</span>
+          </button>
+        </div>
       </div>
-      <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
-        <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Best</div>
-        <div id="highScoreDisplay" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-numbers tracking-tight">0</div>
+
+      <!-- Mode Selector Pills -->
+      <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs font-semibold text-slate-400">
+        <button id="modeTimeAttack" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span>⏱️</span>
+          <span>Time Attack</span>
+        </button>
+        <button id="modeClassic" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 hover:text-slate-200">
+          <span>❤️</span>
+          <span>Classic</span>
+        </button>
+        <button id="modeZen" class="mode-tab py-1.5 px-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 hover:text-slate-200">
+          <span>✨</span>
+          <span>Zen Chill</span>
+        </button>
+      </div>
+
+      <!-- Score, High Score & Dynamic Stats Bar -->
+      <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
+        <!-- Score Card -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Score</div>
+          <div id="scoreDisplay" class="text-xl sm:text-2xl font-black text-amber-400 font-mono-numbers tracking-tight">0</div>
+        </div>
+
+        <!-- High Score Card -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Best</div>
+          <div id="highScoreDisplay" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono-numbers tracking-tight">0</div>
+        </div>
+
+        <!-- Mode Dynamic: Timer / Lives / Star Count -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-col justify-center relative overflow-hidden">
+          <div id="modeStatusLabel" class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Time Left</div>
+          <div id="modeStatusValue" class="text-xl sm:text-2xl font-black text-white font-mono-numbers tracking-tight flex items-center justify-center gap-1">
+            <span id="timeVal">30.0</span><span class="text-xs text-slate-400 font-normal">s</span>
+          </div>
+          <!-- Time bar progress meter -->
+          <div id="timerBarTrack" class="absolute bottom-0 left-0 w-full h-1 bg-slate-800">
+            <div id="timerBarFill" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-75" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Combo Streak & Multiplier -->
+        <div class="col-span-3 sm:col-span-1 bg-slate-950/70 border border-slate-800/90 rounded-2xl p-2 sm:px-3 text-center flex flex-row sm:flex-col items-center sm:justify-center justify-between px-4">
+          <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Combo</div>
+          <div class="flex items-center gap-1.5">
+            <span id="comboDisplay" class="text-xl sm:text-2xl font-black text-purple-400 font-mono-numbers">1x</span>
+            <span id="frenzyBadge" class="hidden text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 rounded animate-pulse">Frenzy</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="w-full flex items-center justify-between z-10">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 font-black text-lg">
+    <!-- Canvas Container -->
+    <div id="canvasContainer" class="w-full aspect-[4/3] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden relative shadow-2xl select-none group">
+      <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
+
+      <!-- Frost Effect Overlay for Freeze Star -->
+      <div id="frostOverlay" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 border-[6px] border-cyan-400/40 bg-cyan-500/10 backdrop-blur-[0.5px]"></div>
+
+      <!-- Start Overlay -->
+      <div id="startOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 text-slate-950 text-3xl font-black flex items-center justify-center mb-3 shadow-xl shadow-amber-400/25 animate-bounce">
           ★
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">Star Catcher</h1>
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">Deluxe</span>
-          </div>
-          <p class="text-xs text-slate-400 font-medium">Catch the celestial stars & build crazy combos</p>
+        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Ready to Catch?</h2>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-xs mt-1.5 mb-6">
+          Click or tap falling stars before they vanish! Chain rapid catches to ignite <span class="text-amber-300 font-semibold">combos</span> and unleash cosmic power-ups.
+        </p>
+        <button id="startGameBtn" class="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-500/30 transition transform hover:scale-105 active:scale-95 flex items-center gap-2">
+          <span>Start Playing</span>
+          <span class="text-lg">→</span>
+        </button>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="pauseOverlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div class="text-4xl mb-2">⏸️</div>
+        <h2 class="text-2xl font-black text-white">Game Paused</h2>
+        <p class="text-xs text-slate-400 mt-1 mb-5">Take a breather, the cosmos will wait for you.</p>
+        <div class="flex gap-3">
+          <button id="resumeGameBtn" class="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm transition active:scale-95">
+            Resume (Space)
+          </button>
+          <button id="quitGameBtn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition active:scale-95">
+            Restart
+          </button>
         </div>
       </div>
 
-      <!-- Quick Sound FX Toggle -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <button id="sfxToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Sound FX">
-          <span id="sfxIcon">🔊</span>
-          <span class="hidden sm:inline text-[11px]">SFX</span>
-        </button>
-        <button id="bgmToggleBtn" class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-semibold text-slate-300 transition flex items-center gap-1.5 active:scale-95" title="Toggle Cosmic BGM">
-          <span id="bgmIcon">🎵</span>
-          <span class="hidden sm:inline text-[11px]">Music</span>
+      <!-- Game Over Overlay -->
+      <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+        <div id="newBestBanner" class="hidden px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-2 animate-bounce">
+          🎉 New High Score! 🎉
+        </div>
+        <h2 class="text-3xl font-black text-white tracking-tight mb-1">Time's Up!</h2>
+        <p id="gameOverSubtext" class="text-xs text-slate-400 mb-4">Great cosmic expedition!</p>
+
+        <!-- Final Score Breakdown -->
+        <div class="w-full max-w-xs bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2.5 mb-5 shadow-inner">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Final Score:</span>
+            <span id="finalScoreVal" class="text-lg font-black text-amber-400 font-mono-numbers">0</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Stars Caught:</span>
+            <span id="finalStarsVal" class="font-bold text-slate-200 font-mono-numbers">0</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Highest Streak:</span>
+            <span id="finalStreakVal" class="font-bold text-purple-400 font-mono-numbers">1x</span>
+          </div>
+          <div class="flex justify-between items-center text-xs border-t border-slate-800/80 pt-2">
+            <span class="text-slate-400">Accuracy:</span>
+            <span id="finalAccuracyVal" class="font-bold text-emerald-400 font-mono-numbers">100%</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="playAgainBtn" class="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/30 transition transform hover:scale-105 active:scale-95">
+            Play Again 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Canvas HUD Buttons (top right overlay) -->
+      <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+        <button id="pauseBtn" class="w-8 h-8 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 backdrop-blur text-xs flex items-center justify-center text-slate-300 transition active:scale-95" title="Pause Game (Space)">
+          ⏸
         </button>
       </div>
     </div>
-    <div id="canvasContainer" class="w-full aspect-[4/3] max-h-[460px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden relative shadow-2xl select-none">
-      <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
-      <div id="frostOverlay" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 border-[6px] border-cyan-400/40 bg-cyan-500/10 backdrop-blur-[0.5px]"></div>
+
+    <!-- Bottom Controls & Hints -->
+    <div class="w-full flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-300">Space</kbd> Pause
+        </span>
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-300">R</kbd> Restart
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="resetScoreBtn" class="px-3 py-1.5 rounded-xl bg-slate-800/70 hover:bg-rose-950/60 hover:text-rose-300 border border-slate-700/60 text-slate-300 font-medium transition text-xs active:scale-95">
+          Reset All
+        </button>
+      </div>
     </div>
   </div>
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const container = document.getElementById('canvasContainer');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const highScoreDisplay = document.getElementById('highScoreDisplay');
-    let score = 0;
-    let highScore = 0;
-    let combo = 1;
-    let comboTimer = 0;
-    const comboDuration = 2.2;
-    let isFrenzy = false;
-    let frenzyTimer = 0;
 
-    let logicalWidth = 480;
-    let logicalHeight = 360;
 
-    function resizeCanvas() {
-      const rect = container.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      logicalWidth = rect.width || 480;
-      logicalHeight = rect.height || 360;
-
-      canvas.width = Math.floor(logicalWidth * dpr);
-      canvas.height = Math.floor(logicalHeight * dpr);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(dpr, dpr);
-    }
-
-    function handlePointer(clientX, clientY) {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = clientX - rect.left;
-      const clickY = clientY - rect.top;
-
-      for (let i = stars.length - 1; i >= 0; i--) {
-        const s = stars[i];
-        const dx = clickX - s.x;
-        const dy = clickY - s.y;
-        if (Math.sqrt(dx * dx + dy * dy) <= s.radius * 1.45) {
-          stars.splice(i, 1);
-          spawnParticles(s.x, s.y, STAR_TYPES[s.type].color, 18);
-          score += STAR_TYPES[s.type].points;
-          if (score > highScore) highScore = score;
-          scoreDisplay.textContent = score;
-          highScoreDisplay.textContent = highScore;
-          break;
-        }
-      }
-    }
-
-    canvas.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      handlePointer(e.clientX, e.clientY);
-    });
-
-    canvas.addEventListener('pointermove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      if (Math.random() < 0.45) {
-        cursorParticles.push({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: (Math.random() - 0.5) * 0.8,
-          size: Math.random() * 2 + 1,
-          alpha: 0.9
-        });
-      }
-    });
-
-    window.addEventListener('resize', resizeCanvas);
-    const STAR_TYPES = {
-      GOLD: {
-        name: 'Gold',
-        points: 100,
-        color: '#fbbf24',
-        accent: '#fef08a',
-        innerGlow: 'rgba(251, 191, 36, 0.5)',
-        radius: 26,
-        spikes: 5,
-        weight: 65
-      },
-      NOVA: {
-        name: 'Supernova',
-        points: 250,
-        color: '#c084fc',
-        accent: '#f3e8ff',
-        innerGlow: 'rgba(192, 132, 252, 0.6)',
-        radius: 28,
-        spikes: 4,
-        weight: 15
-      },
-      COMET: {
-        name: 'Rainbow Comet',
-        points: 500,
-        color: '#f43f5e',
-        accent: '#ffe4e6',
-        innerGlow: 'rgba(244, 63, 94, 0.6)',
-        radius: 22,
-        spikes: 7,
-        weight: 10
-      },
-      FROST: {
-        name: 'Frost',
-        points: 150,
-        color: '#38bdf8',
-        accent: '#e0f2fe',
-        innerGlow: 'rgba(56, 189, 248, 0.6)',
-        radius: 25,
-        spikes: 6,
-        weight: 10
-      },
-      CHRONO: {
-        name: 'Chrono',
-        points: 150,
-        color: '#34d399',
-        accent: '#d1fae5',
-        innerGlow: 'rgba(52, 211, 153, 0.6)',
-        radius: 25,
-        spikes: 5,
-        weight: 10
-      },
-      BOMB: {
-        name: 'Dark Void',
-        points: -200,
-        color: '#ef4444',
-        accent: '#450a0a',
-        innerGlow: 'rgba(239, 68, 68, 0.7)',
-        radius: 24,
-        spikes: 8,
-        weight: 12
-      }
-    };
-
-    let stars = [];
-    let backgroundStars = [];
-    let cursorParticles = [];
-    let particles = [];
-    let floatingTexts = [];
-
-    function spawnFloatingText(text, x, y, color = '#fbbf24', fontSize = 16) {
-      floatingTexts.push({
-        text,
-        x,
-        y,
-        color,
-        fontSize,
-        alpha: 1.0,
-        vy: -1.4,
-        scale: 1.2
-      });
-    }
-    let screenShake = 0;
-
-    function triggerScreenShake(intensity = 6) {
-      screenShake = intensity;
-    }
-
-    function spawnRingWave(x, y, color) {
-      particles.push({
-        isRing: true,
-        x,
-        y,
-        radius: 10,
-        maxRadius: 65,
-        color,
-        alpha: 0.8,
-        growth: 3.5
-      });
-    }
-
-    function spawnParticles(x, y, color, count = 16, speedMult = 1.0) {
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = (Math.random() * 3.5 + 1.2) * speedMult;
-        particles.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          size: Math.random() * 3.5 + 1.5,
-          color,
-          alpha: 1.0,
-          decay: Math.random() * 0.03 + 0.02,
-          gravity: 0.05
-        });
-      }
-    }
-    let lastTimestamp = 0;
-
-    function drawStarPolygon(cx, cy, spikes, outerRadius, innerRadius) {
-      let rot = (Math.PI / 2) * 3;
-      let x = cx;
-      let y = cy;
-      const step = Math.PI / spikes;
-
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - outerRadius);
-      for (let i = 0; i < spikes; i++) {
-        x = cx + Math.cos(rot) * outerRadius;
-        y = cy + Math.sin(rot) * outerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-
-        x = cx + Math.cos(rot) * innerRadius;
-        y = cy + Math.sin(rot) * innerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-      }
-      ctx.lineTo(cx, cy - outerRadius);
-      ctx.closePath();
-    }
-
-    function getRandomStarType() {
-      const rand = Math.random() * 100;
-      if (rand < 20) return 'NOVA';
-      if (rand < 30) return 'COMET';
-      return 'GOLD';
-    }
-
-    function createStar() {
-      const typeKey = getRandomStarType();
-      const config = STAR_TYPES[typeKey];
-      const config = STAR_TYPES.GOLD;
-      const padding = config.radius + 20;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 0.6 + 0.2;
-
-      return {
-        type: typeKey,
-        x: padding + Math.random() * (logicalWidth - padding * 2),
-        y: padding + Math.random() * (logicalHeight - padding * 2),
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        radius: config.radius,
-        rotation: 0,
-        rotSpeed: (Math.random() - 0.5) * 0.04,
-        pulsePhase: Math.random() * Math.PI,
-        lifespan: 5.0,
-        maxLifespan: 5.0
-      };
-    }
-
-    function initBackgroundStars() {
-      backgroundStars = [];
-      const starCount = 55;
-      for (let i = 0; i < starCount; i++) {
-        backgroundStars.push({
-          x: Math.random() * logicalWidth,
-          y: Math.random() * logicalHeight,
-          radius: Math.random() * 1.5 + 0.5,
-          alpha: Math.random() * 0.7 + 0.2,
-          speed: Math.random() * 0.03 + 0.01,
-          twinklePhase: Math.random() * Math.PI * 2
-        });
-      }
-    }
-
-    function render(dt) {
-      ctx.save();
-      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
-
-      if (screenShake > 0) {
-        const sx = (Math.random() - 0.5) * screenShake * 2;
-        const sy = (Math.random() - 0.5) * screenShake * 2;
-        ctx.translate(sx, sy);
-        screenShake = Math.max(0, screenShake - dt * 25);
-      }
-
-      // Render Active Stars
-      stars.forEach(s => {
-        const config = STAR_TYPES[s.type];
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.rotation);
-        const pulseScale = 1 + Math.sin(s.pulsePhase) * 0.06;
-        const currentR = s.radius * pulseScale;
-
-        // Outer Radial Glow
-        const grad = ctx.createRadialGradient(0, 0, currentR * 0.2, 0, 0, currentR * 1.8);
-        grad.addColorStop(0, config.innerGlow);
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(0, 0, currentR * 1.8, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Polygon Body & Outline
-        drawStarPolygon(0, 0, config.spikes, currentR, currentR * 0.48);
-        ctx.fillStyle = config.color;
-        ctx.fill();
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = config.accent;
-        ctx.stroke();
-        ctx.restore();
-      });
-
-      // Distant Twinkling Stars
-      backgroundStars.forEach(bs => {
-        bs.twinklePhase += bs.speed;
-        const currentAlpha = bs.alpha * (0.6 + Math.sin(bs.twinklePhase) * 0.4);
-        ctx.fillStyle = `rgba(226, 232, 240, ${currentAlpha})`;
-        ctx.beginPath();
-        ctx.arc(bs.x, bs.y, bs.radius, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Cursor Stardust Particles
-      for (let i = cursorParticles.length - 1; i >= 0; i--) {
-        const cp = cursorParticles[i];
-        cp.x += cp.vx;
-        cp.y += cp.vy;
-        cp.alpha -= dt * 2.2;
-        if (cp.alpha <= 0) {
-          cursorParticles.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = `rgba(251, 191, 36, ${cp.alpha * 0.8})`;
-        ctx.beginPath();
-        ctx.arc(cp.x, cp.y, cp.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Space Grid
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
-      ctx.lineWidth = 1;
-      const gridSize = 32;
-      for (let x = 0; x < logicalWidth; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, logicalHeight);
-        ctx.stroke();
-      }
-      for (let y = 0; y < logicalHeight; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(logicalWidth, y);
-        ctx.stroke();
-      }
-    }
-
-    function gameLoop(timestamp) {
-      if (!lastTimestamp) lastTimestamp = timestamp;
-      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
-      lastTimestamp = timestamp;
-
-      // Active Star Updates
-      for (let i = stars.length - 1; i >= 0; i--) {
-        const s = stars[i];
-        s.rotation += s.rotSpeed;
-        s.pulsePhase += 0.06;
-        s.x += s.vx;
-        s.y += s.vy;
-
-        const pad = s.radius + 15;
-        if (s.x < pad) { s.x = pad; s.vx *= -1; }
-        if (s.x > logicalWidth - pad) { s.x = logicalWidth - pad; s.vx *= -1; }
-        if (s.y < pad) { s.y = pad; s.vy *= -1; }
-        if (s.y > logicalHeight - pad) { s.y = logicalHeight - pad; s.vy *= -1; }
-      }
-
-      if (stars.length < 2) stars.push(createStar());
-
-      render(dt);
-      requestAnimationFrame(gameLoop);
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      resizeCanvas();
-      initBackgroundStars();
-      requestAnimationFrame(gameLoop);
-    });
-  </script>
 </body>
 </html>
